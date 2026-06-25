@@ -1,23 +1,30 @@
 import express from "express";
 import bcrypt from "bcrypt";
+import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import { prisma } from "./lib/prisma.js";
 import { CreateUserSchema, todoSchema } from "./type.js";
 const app = express();
 app.use(express.json());
+dotenv.config();
 
+//Auth  Route
 
-
-//auth route
+//SignUp Route
 app.post("/auth/signup", async (req, res) => {
+  //schema validation
   const { success, data } = CreateUserSchema.safeParse(req.body);
 
   if (!success) {
-    res.status(411).json({ message: "Incorrect credentials !" });
-    return;
+    return res.status(411).json({ message: "Incorrect credentials !" });
   }
 
-  const hashedPassword = await bcrypt.hash(data.password, "mynameisshiv");
+  const hashedPassword = await bcrypt.hash(
+    data.password,
+    process.env.SECRET_PASSWORD as string,
+  );
+
+
   const User = await prisma.user.create({
     data: {
       username: data.username,
@@ -25,26 +32,44 @@ app.post("/auth/signup", async (req, res) => {
     },
   });
 
-  console.log(User); // user print
-  res.status(200).json({
-    msg: "user created  successfully !",
+  // console.log(User); // user print
+  return res.status(200).json({
+    User,
   });
 });
 
-
-
-//signin
+//SignIn Route
 app.get("/auth/signin", async (req, res) => {
+  //scheam validating
   const { success, data } = CreateUserSchema.safeParse(req.body);
   if (!success) {
-    res.status(411).json({
+    return res.status(411).json({
       msg: "invalid credentials",
     });
   }
+  const { username, password } = data;
 
+  const createdUser = prisma.user.findUnique({
+    where: {
+      username,
+      password,
+    },
+  });
 
-  
-  res.json({ msg: "this sign request" });
+  //check user
+  if (!createdUser) {
+    return res.json({ msg: "invalid password or username !" });
+  }
+
+  const token = jwt.sign(
+    { username, password },
+    process.env.JWT_SECRET as string,
+  );
+
+  return res.json({
+    token,
+    msg: "User signed Up successfully !",
+  });
 });
 
 //Todo Route
