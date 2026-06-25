@@ -7,7 +7,8 @@ import { CreateUserSchema, todoSchema } from "./type.js";
 const app = express();
 app.use(express.json());
 dotenv.config();
-
+const PORT = (process.env.PORT as string) || 3030;
+// console.log(typeof PORT, PORT);
 //Auth  Route
 
 //SignUp Route
@@ -23,7 +24,6 @@ app.post("/auth/signup", async (req, res) => {
     data.password,
     process.env.SECRET_PASSWORD as string,
   );
-
 
   const User = await prisma.user.create({
     data: {
@@ -75,7 +75,7 @@ app.get("/auth/signin", async (req, res) => {
 //Todo Route
 //get all todos
 app.get("/api/Todos", async (req, res) => {
-  res.json({});
+  res.json({ msg: "this is all todos !" });
 });
 
 //get single totdos
@@ -98,6 +98,6 @@ app.delete("/api/Todos", async (req, res) => {
   res.json({});
 });
 
-app.listen(8080, () => {
-  console.log("server is listening at port :8080");
+app.listen(PORT, () => {
+  console.log(`server is listening at port :${PORT}`);
 });
