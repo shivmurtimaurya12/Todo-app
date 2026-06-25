@@ -1,0 +1,26 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id       String  @id @default(uuid())
+  username String  @unique
+  password String  
+  todos    Todos[]
+}
+
+model Todos {
+  id          String    @id @default(uuid())
+  title       String
+  description String
+  isCompleted Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  dueDate     DateTime?
+  user        User      @relation(fields: [userId], references: [id])
+  userId      String
+}
