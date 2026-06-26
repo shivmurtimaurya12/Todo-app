@@ -21,6 +21,12 @@ model Todos {
   isCompleted Boolean   @default(false)
   createdAt   DateTime  @default(now())
   dueDate     DateTime?
-  user        User?     @relation(fields: [userId], references: [id])
+  user        User?     @relation(fields: [userId], references: [id], onDelete: Cascade)  
   userId      String?
 }
+
+//onDelete:Cascade  use krne se user delete krne se uska todos/posts bhi usi k saath saath delete ho jata hai
+// iske liye mujhe fir se migrate krna pdta hai
+// if don't  want to use this another way to delete user with thier posts/todos is
+//$awit prisma.$transaction([deleteTodos,deleteUser]) order matter krta hai and 
+// in this case await nhi use kiya jaata hai 

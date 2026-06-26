@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import { prisma } from "./lib/prisma.js";
-import { CreateUserSchema, todoSchema } from "./type.js";
+import { CreateUserSchema } from "./type.js";
 const app = express();
 app.use(express.json());
 dotenv.config();
@@ -73,33 +73,66 @@ app.get("/auth/signin", async (req, res) => {
   });
 });
 
-
 //Todo Route
 //get all todos
-app.get("/api/Todos", async (req, res) => {
-
-  const allTodos=await prisma.user.findMany({});
-  res.json({ msg: "this is all todos !" });
+app.get("/api/todos", async (req, res) => {
+  const allUsers = await prisma.user.findMany({
+    include: {
+      todos: true,
+    },
+  });
+  return res.json({ allUsers });
 });
 
 //get single totdos
-app.get("/api/:Todo", async (req, res) => {
-  res.json({});
+app.get("/api/:userId", async (req, res) => {
+  const { userId } = req.params;
+  const userTodo = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+    include: {
+      todos: true,
+    },
+  });
+  return res.json({ userTodo });
 });
 
 //create todo
-app.post("/api/Todos", async (req, res) => {
-  res.json({});
+app.post("/api/todo", async (req, res) => {
+  const { title, description, isCompleted, dueDate } = req.body;
+  const createdTodo = await prisma.todos.create({
+    data: { title, description, isCompleted, dueDate },
+  });
+
+  return res.json({ createdTodo });
 });
 
 //update todo
-app.patch("/api/Todos", async (req, res) => {
-  res.json({});
+app.patch("/api/:userId", async (req, res) => {
+  const { userId } = req.params;
+  await prisma.todos.upsert({
+    where: {
+      id: userId,
+    },
+    update: req.body,
+    create: req.body,
+  });
+  return res.json({ msg: "updated successfully !" });
 });
 
 //delete todo
-app.delete("/api/Todos", async (req, res) => {
-  res.json({});
+
+app.delete("/api/:userId", async (req, res) => {
+  const { userId } = req.params;
+
+  await prisma.user.delete({
+    where: {
+      id: userId,
+    },
+  });
+
+  return res.json({ msg: "dleted successfully !" });
 });
 
 app.listen(PORT, () => {
