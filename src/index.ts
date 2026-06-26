@@ -8,7 +8,7 @@ const app = express();
 app.use(express.json());
 dotenv.config();
 const PORT = (process.env.PORT as string) || 3030;
-// console.log(typeof PORT, PORT);
+
 //Auth  Route
 
 //SignUp Route
@@ -29,11 +29,9 @@ app.post("/auth/signup", async (req, res) => {
     data: {
       username: data.username,
       password: hashedPassword,
-      // password: data.password,
     },
   });
 
-  // console.log(User); // user print
   return res.status(200).json({
     User,
   });
@@ -75,9 +73,12 @@ app.get("/auth/signin", async (req, res) => {
   });
 });
 
+
 //Todo Route
 //get all todos
 app.get("/api/Todos", async (req, res) => {
+
+  const allTodos=await prisma.user.findMany({});
   res.json({ msg: "this is all todos !" });
 });
 
